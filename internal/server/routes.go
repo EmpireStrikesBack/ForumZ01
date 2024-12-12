@@ -11,8 +11,8 @@ func SetupRoutes() http.Handler {
 	mux := http.NewServeMux()
 
 	// serve static files
-	fs := http.FileServer(http.Dir("./web/static"))
-	mux.Handle("/static/", http.StripPrefix("/static/", fs))
+	fs := http.FileServer(http.Dir("./web"))
+	mux.Handle("/web/", http.StripPrefix("/web/", fs))
 
 	//Routes
 	mux.Handle("/", middleware.SessionMiddleWare(http.HandlerFunc(handlers.HomePageHandler)))

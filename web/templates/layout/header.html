@@ -1,10 +1,32 @@
 {{ define "header" }}
 	<header>
+		<a href="/">
+			<img src="/web/src/image/logo0.png" alt="Forum logo">
+		</a>
 		<a href="/">Home</a>
 		{{ if .Session }}
-			<a href="/logout">Logout</a>
+			<div class="logged-searchbar">
+				<input type="text" placeholder="Search...">
+			</div>
+			<a href="">
+				<img src="" alt="Profile picture">
+			</a>
+			<div class="chat">
+
+			</div>
+			<div class="notifications">
+
+			</div>
 		{{ else }}
-			<a href="/login">Login</a>
-		{{ end }}
+			<div class="unlogged-searchbar">
+				<input type="text" placeholder="Search...">
+			</div>
+			<a href="/login">
+				<button>Login</button>
+			</a>
+			<a href="/register">
+				<button>Register</button>
+			</a>
+	{{ end }}
 	</header>
 {{ end }}

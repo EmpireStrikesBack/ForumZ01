@@ -114,6 +114,7 @@ body{
     border-width: 1px;
     width: 564px;
     height: 605px;
+    margin-left: 12px;
 }
 
 .login-form-field {
