@@ -41,3 +41,21 @@ type HomePageData struct {
 	Categories	[]*db.Category
 	Posts		[]*db.Post
 }
+
+type AdminPageData struct {
+	Session		*db.UserSession
+	Posts		[]*db.Post
+	Categories	[]*db.Category
+	Clients		[]db.Client
+	Reports		[]db.Report
+}
+
+type AdminPostsPageData struct {
+	Session		*db.UserSession
+	Posts		[]*db.Post
+}
+
+type AdminClientsPageData struct {
+	Session		*db.UserSession
+	Clients		[]db.Client
+}

@@ -13,6 +13,11 @@ func SetupRoutes() http.Handler {
 	fs := http.FileServer(http.Dir("./web/static"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
+	//Admin
+	mux.Handle("/admin", adminMiddleWare(http.HandlerFunc(handlers.AdminHandler)))
+	mux.Handle("/admin-posts", adminMiddleWare(http.HandlerFunc(handlers.AdminPostsHandler)))
+	mux.Handle("/admin-users", adminMiddleWare(http.HandlerFunc(handlers.AdminClientsHandler)))
+
 	//Routes
 	mux.Handle("/", sessionMiddleWare(http.HandlerFunc(handlers.HomePageHandler)))
 	mux.Handle("/login", sessionMiddleWare(http.HandlerFunc(handlers.LoginHandler)))

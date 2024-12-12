@@ -49,7 +49,7 @@ import (
 func SaveUser(
 	userName string, email string, password string, userRole string,
 ) (int, error) {
-	var	c	config.ClientsTableKeys
+	var c config.ClientsTableKeys
 
 	c = config.TableKeys.Clients
 	result, err := insertInto(InsertIntoQuery{
@@ -135,14 +135,14 @@ func SaveUser(
 // Validate User credentials
 func ValidateUserCredentials(username, password string) (Client, error) {
 	var user Client
-	var	c	config.ClientsTableKeys
+	var c config.ClientsTableKeys
 
 	c = config.TableKeys.Clients
 	//Get user by username/email
 	query := `
-		SELECT `+c.ID+`, `+c.UserName+`, `+c.Email+`,
-				`+c.Password+`, `+c.UserRole+`
-		FROM `+c.Clients+` WHERE `+c.UserName+` = ? OR `+c.Email+` = ?;
+		SELECT ` + c.ID + `, ` + c.UserName + `, ` + c.Email + `,
+				` + c.Password + `, ` + c.UserRole + `
+		FROM ` + c.Clients + ` WHERE ` + c.UserName + ` = ? OR ` + c.Email + ` = ?;
 	`
 
 	row := DB.QueryRow(query, username, username)
@@ -167,17 +167,17 @@ func ValidateUserCredentials(username, password string) (Client, error) {
 
 // Social Login
 func GetOrCreateUserByOAuth(oauthProvider, oauthID, email, name, avatar string) (*Client, error) {
-	var user	Client
-	var	c		config.ClientsTableKeys
+	var user Client
+	var c config.ClientsTableKeys
 
 	c = config.TableKeys.Clients
 	// Check if the user already exists
 	query := `
-		SELECT `+c.ID+`, `+c.LastName+`, `+c.FirstName+`,
-				`+c.UserName+`, `+c.Email+`, `+c.Avatar+`,
-				`+c.UserRole+`, `+c.OauthProvider+`, `+c.OauthID+`
-		FROM `+c.Clients+`
-		WHERE `+c.OauthProvider+` = ? AND `+c.OauthID+` = ?
+		SELECT ` + c.ID + `, ` + c.LastName + `, ` + c.FirstName + `,
+				` + c.UserName + `, ` + c.Email + `, ` + c.Avatar + `,
+				` + c.UserRole + `, ` + c.OauthProvider + `, ` + c.OauthID + `
+		FROM ` + c.Clients + `
+		WHERE ` + c.OauthProvider + ` = ? AND ` + c.OauthID + ` = ?
 	`
 	err := DB.QueryRow(query, oauthProvider, oauthID).Scan(
 		&user.ID, &user.LastName, &user.FirstName, &user.UserName, &user.Email,
@@ -188,15 +188,15 @@ func GetOrCreateUserByOAuth(oauthProvider, oauthID, email, name, avatar string) 
 	if err == sql.ErrNoRows {
 		// Insert new user
 		query := `
-			INSERT INTO `+c.Clients+` (
-				`+c.LastName+`, `+c.FirstName+`, `+c.UserName+`,
-				`+c.Email+`, `+c.Avatar+`, `+c.UserRole+`,
-				`+c.OauthProvider+`, `+c.OauthID+`
+			INSERT INTO ` + c.Clients + ` (
+				` + c.LastName + `, ` + c.FirstName + `, ` + c.UserName + `,
+				` + c.Email + `, ` + c.Avatar + `, ` + c.UserRole + `,
+				` + c.OauthProvider + `, ` + c.OauthID + `
 			)
 			VALUES (?, ?, ?, ?, ?, 'user', ?, ?)
 		`
 		result, insertErr := DB.Exec(query, "", name, name, email,
-										avatar, oauthProvider, oauthID)
+			avatar, oauthProvider, oauthID)
 		if insertErr != nil {
 			log.Printf("Insert failed: %v", insertErr)
 			return nil, fmt.Errorf("failed to create user: %w", insertErr)
@@ -212,7 +212,7 @@ func GetOrCreateUserByOAuth(oauthProvider, oauthID, email, name, avatar string) 
 
 		// Return the newly created user
 		return &Client{
-			ID:        int(userID),
+			ID:            int(userID),
 			FirstName:     name,
 			UserName:      name,
 			Email:         email,
@@ -227,4 +227,64 @@ func GetOrCreateUserByOAuth(oauthProvider, oauthID, email, name, avatar string) 
 		return nil, fmt.Errorf("failed to fetch user: %w", err)
 	}
 	return &user, nil
+}
+
+func GetUserRole(userID int) (string, error) {
+	var c config.ClientsTableKeys
+	var role string
+
+	c = config.TableKeys.Clients
+
+	query := `
+		SELECT ` + c.UserRole + `
+		FROM ` + c.Clients + `
+		WHERE ` + c.ID + ` = ?
+	`
+	row := DB.QueryRow(query, userID)
+
+	err := row.Scan(
+		&role,
+	)
+
+	if err == sql.ErrNoRows {
+		return role, fmt.Errorf("user not found")
+	} else if err != nil {
+		return role, err
+	}
+
+	return role, nil
+}
+
+func GetAllClients() ([]Client, error) {
+	var clients []Client
+	var err	error
+
+	c := config.TableKeys.Clients
+
+	query := `
+		SELECT ` + c.UserName + `, ` + c.UserRole + `
+		FROM ` + c.Clients + `
+		LIMIT 8
+	`
+
+	rows, err := DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var client Client
+		err := rows.Scan(&client.UserName, &client.UserRole)
+		if err != nil {
+			return nil, err
+		}
+		clients = append(clients, client)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return clients, nil
 }

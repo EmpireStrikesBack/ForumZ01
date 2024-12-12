@@ -36,6 +36,13 @@ type Category struct {
 	Name	string
 }
 
+type Report struct {
+	ID			int
+	From		string
+	Answered	bool
+	Content		string
+}
+
 type UserConfig struct {
 	IsLiked		bool
 	IsDisliked	bool

@@ -39,3 +39,28 @@ func sessionMiddleWare(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
+
+func adminMiddleWare(next http.Handler) http.Handler {
+	var ctx context.Context
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("session_id")
+		if err != nil {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		session, err := database.GetSessionByID(cookie.Value)
+		if err != nil || time.Now().After(session.Expiration) {
+			next.ServeHTTP(w, r)
+			return
+		}
+		userRole, _ := database.GetUserRole(session.UserID)
+		if userRole != "administrator" {
+			next.ServeHTTP(w, r)
+			return
+		}
+		ctx = context.WithValue(r.Context(), config.SessionKey, session)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
